@@ -9,6 +9,7 @@ import joblib
 from mlflow import MlflowClient
 from sklearn import set_config
 from scripts.data_clean_utils import perform_data_cleaning
+from src.config import config
 
 # set the output as pandas
 set_config(transform_output='pandas')
@@ -17,12 +18,12 @@ set_config(transform_output='pandas')
 import dagshub
 import mlflow.client
 
-dagshub.init(repo_owner='himanshu1703', 
-             repo_name='swiggy-delivery-time-prediction', 
+dagshub.init(repo_owner=config.DAGSHUB_USER_NAME, 
+             repo_name=config.DAGSHUB_REPO_NAME, 
              mlflow=True)
 
 # set the mlflow tracking server
-mlflow.set_tracking_uri("https://dagshub.com/himanshu1703/swiggy-delivery-time-prediction.mlflow")
+mlflow.set_tracking_uri(config.MLFLOW_TRACKING_URI)
 
 
 class Data(BaseModel):  
@@ -81,10 +82,14 @@ ordinal_cat_cols = ["traffic","distance_type"]
 client = MlflowClient()
 
 # load the model info to get the model name
-model_name = load_model_information("run_information.json")['model_name']
+try:
+    model_name = load_model_information("run_information.json")['model_name']
+except FileNotFoundError:
+    model_name = config.MODEL_NAME
+    print(f"run_information.json not found. Using default model name: {model_name}")
 
 # stage of the model
-stage = "Production"
+stage = config.MODEL_STAGE
 
 # get the latest model version
 # latest_model_ver = client.get_latest_versions(name=model_name,stages=[stage])
@@ -148,4 +153,18 @@ def do_predictions(data: Data):
    
    
 if __name__ == "__main__":
-    uvicorn.run(app="app:app",host="0.0.0.0",port=8000)
+    # Display configuration
+    print("\n" + "="*60)
+    print("🚀 Starting Swiggy Delivery Time Prediction API")
+    print("="*60)
+    config.display_config()
+    print(f"\n📡 API will be available at: http://{config.API_HOST}:{config.API_PORT}")
+    print(f"📚 API Docs available at: http://{config.API_HOST}:{config.API_PORT}/docs")
+    print("="*60 + "\n")
+    
+    uvicorn.run(
+        app="app:app",
+        host=config.API_HOST,
+        port=config.API_PORT,
+        reload=config.API_RELOAD
+    )
