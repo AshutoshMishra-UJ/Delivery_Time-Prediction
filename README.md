@@ -24,6 +24,14 @@ This project predicts food delivery time in minutes for Swiggy orders using adva
 
 ---
 
+## 🎬 Model Interface Preview
+
+Watch a quick demo of how the model behaves while interacting with user input:
+
+- [▶ View Preview Video](./Swiggy_Delivery_Time_Prediction.mp4)
+
+---
+
 ## 🛠️ Tech Stack
 
 | Category | Technologies |
